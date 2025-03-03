@@ -49,7 +49,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git-svn subversion
+          sudo apt-get install -y git subversion
 
       - name: Configure Git
         run: |
