@@ -1,6 +1,9 @@
 name: SVN to Git Migration
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       repositories:
