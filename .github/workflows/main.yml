@@ -49,8 +49,12 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y git git-svn subversion
-
+          sudo apt-get install -y git=1:2.42.0-* git-svn subversion || {
+            # If specific version fails, try to install git-svn first
+            sudo apt-get install -y git-svn
+            sudo apt-get install -y git subversion
+          }
+    
       - name: Configure Git
         run: |
           git config --global user.name "GitHub Action Bot"
