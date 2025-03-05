@@ -66,21 +66,23 @@ jobs:
 
       - name: Setup GitHub CLI
         run: |
-          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+          echo "${{ secrets.GH_PAT }}" | gh auth login --with-token
 
       - name: Create GitHub Repository
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
         run: |
           REPO_NAME="${{ matrix.repo }}"
           if ! gh repo view "${{ env.GITHUB_ORG }}/$REPO_NAME" &>/dev/null; then
             echo "Creating repository $REPO_NAME..."
-            gh repo create "${{ env.GITHUB_ORG }}/$REPO_NAME" --private --confirm || {
+            gh repo create "${{ env.GITHUB_ORG }}/$REPO_NAME" --private || {
               echo "Failed to create repository"
               exit 1
             }
           else
             echo "Repository $REPO_NAME already exists"
           fi
-
+        
       - name: Migrate Repository
         env:
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
