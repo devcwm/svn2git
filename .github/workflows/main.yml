@@ -17,6 +17,12 @@ on:
 env:
   SVN_BASE_URL: "https://svn.apache.org/repos/asf"
   GITHUB_BASE_URL: "git@github.com:devcwm"
+  GITHUB_ORG: "devcwm"
+
+permissions:
+  contents: write
+  packages: write
+  repository-projects: write
 
 jobs:
   prepare-matrix:
@@ -51,23 +57,29 @@ jobs:
           sudo apt-get update
           sudo add-apt-repository ppa:git-core/ppa
           sudo apt-get update
-          sudo apt-get install -y git git-svn subversion
+          sudo apt-get install -y git git-svn subversion gh
     
       - name: Configure Git
         run: |
           git config --global user.name "GitHub Action Bot"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      # - name: Setup SSH Key
-      #   uses: webfactory/ssh-agent@v0.7.0
-      #   with:
-      #     ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup GitHub CLI
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      # - name: Create SVN credentials file
-      #   run: |
-      #     mkdir -p ~/.subversion/auth/svn.simple
-      #     echo "${{ secrets.SVN_USERNAME }} ${{ secrets.SVN_PASSWORD }}" > ~/.subversion/auth/svn.simple/credentials
-      #     chmod 600 ~/.subversion/auth/svn.simple/credentials
+      - name: Create GitHub Repository
+        run: |
+          REPO_NAME="${{ matrix.repo }}"
+          if ! gh repo view "${{ env.GITHUB_ORG }}/$REPO_NAME" &>/dev/null; then
+            echo "Creating repository $REPO_NAME..."
+            gh repo create "${{ env.GITHUB_ORG }}/$REPO_NAME" --private --confirm || {
+              echo "Failed to create repository"
+              exit 1
+            }
+          else
+            echo "Repository $REPO_NAME already exists"
+          fi
 
       - name: Migrate Repository
         env:
